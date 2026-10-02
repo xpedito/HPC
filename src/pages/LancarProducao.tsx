@@ -130,11 +130,11 @@ export default function LancarProducao({ authState }: Props) {
     <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
       {/* Cabeçalho */}
       <div>
-        <h1 className="text-xl font-bold text-gray-900">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">
           {editandoId ? '✏️ Editar registro' : '📋 Lançar produção'}
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Profissional: <strong>{usuario.nome}</strong>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          Profissional: <strong className="text-gray-700 dark:text-gray-200">{usuario.nome}</strong>
         </p>
       </div>
 
@@ -153,7 +153,7 @@ export default function LancarProducao({ authState }: Props) {
           <input
             type="date"
             max={hoje}
-            className={`block w-full min-h-tap rounded-lg border px-3 py-2 text-base focus:outline-none focus:ring-2 focus:border-transparent ${errors.data ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-brand-500'}`}
+            className={`block w-full min-h-tap rounded-lg border px-3 py-2 text-base dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:border-transparent ${errors.data ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-700 focus:ring-brand-500'}`}
             {...register('data')}
           />
         </Field>
@@ -228,7 +228,7 @@ export default function LancarProducao({ authState }: Props) {
             min={0}
             max={130}
             placeholder="Ex: 34"
-            className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             {...register('idade', { setValueAs: (v) => v === '' ? undefined : Number(v) })}
           />
         </Field>
@@ -237,7 +237,7 @@ export default function LancarProducao({ authState }: Props) {
           <textarea
             rows={3}
             placeholder="Anotações adicionais…"
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
             {...register('observacao')}
           />
         </Field>
@@ -256,14 +256,14 @@ export default function LancarProducao({ authState }: Props) {
 
       {/* Lista dos lançamentos do dia */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-gray-700">
+        <h2 className="text-base font-semibold text-gray-700 dark:text-gray-200">
           Lançamentos do dia ({docsHoje.length})
         </h2>
 
         {loadingDocs && <Spinner label="Carregando registros…" />}
 
         {!loadingDocs && docsHoje.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-4">
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
             Nenhum lançamento hoje ainda.
           </p>
         )}
@@ -273,26 +273,26 @@ export default function LancarProducao({ authState }: Props) {
             key={doc.id}
             className={`rounded-lg border p-3 space-y-1 ${
               doc.houveAtendimento === 'REVISAR'
-                ? 'border-yellow-400 bg-yellow-50'
-                : 'border-gray-200 bg-white'
+                ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950/40 dark:border-yellow-700/60'
+                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900'
             }`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="space-y-0.5 flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {doc.setor || <span className="text-gray-400">Sem setor</span>}
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  {doc.setor || <span className="text-gray-400 dark:text-gray-500">Sem setor</span>}
                   {' · '}{doc.turno}
                 </p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   {doc.publico || '—'} · {doc.origemContato || '—'}
                 </p>
                 <div className="flex gap-1.5 flex-wrap mt-1">
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     doc.houveAtendimento === 'Sim'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300 border dark:border-green-800/50'
                       : doc.houveAtendimento === 'REVISAR'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-600'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 border dark:border-yellow-800/50'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                   }`}>
                     {doc.houveAtendimento === 'Sim'
                       ? '✓ Atendimento'
@@ -301,15 +301,15 @@ export default function LancarProducao({ authState }: Props) {
                       : 'Sem atendimento'}
                   </span>
                   {doc.procedimento && (
-                    <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">
+                    <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 dark:border dark:border-blue-800/40 rounded-full">
                       {doc.procedimento}
                     </span>
                   )}
                 </div>
               </div>
               <div className="flex gap-1 shrink-0">
-                <button onClick={() => iniciarEdicao(doc)} className="text-xs text-brand-600 hover:text-brand-800 px-2 py-1 rounded" title="Editar">✏️</button>
-                <button onClick={() => handleExcluir(doc.id)} className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded" title="Excluir">🗑</button>
+                <button onClick={() => iniciarEdicao(doc)} className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-800 px-2 py-1 rounded" title="Editar">✏️</button>
+                <button onClick={() => handleExcluir(doc.id)} className="text-xs text-red-500 dark:text-red-400 hover:text-red-700 px-2 py-1 rounded" title="Excluir">🗑</button>
               </div>
             </div>
           </div>

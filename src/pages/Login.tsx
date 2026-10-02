@@ -48,23 +48,23 @@ export default function Login({ onSignIn, onSignInWithGoogle }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4 transition-colors">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <div className="text-4xl mb-2">🏥</div>
-          <h1 className="text-2xl font-bold text-gray-900">HPC Psicologia</h1>
-          <p className="text-sm text-gray-500 mt-1">Registro de Produção</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">HPC Psicologia</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Registro de Produção</p>
         </div>
 
         {erro && <ErroBanner mensagem={erro} />}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-5">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
           <Button
             type="button"
             variant="secondary"
             loading={googleLoading}
             onClick={handleGoogleLogin}
-            className="w-full border-gray-300 hover:bg-gray-50 text-gray-700 font-medium"
+            className="w-full border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path
@@ -88,9 +88,9 @@ export default function Login({ onSignIn, onSignInWithGoogle }: Props) {
           </Button>
 
           <div className="relative flex items-center justify-center">
-            <div className="border-t border-gray-200 w-full" />
-            <span className="bg-white px-3 text-xs text-gray-400 uppercase tracking-wider">ou e-mail</span>
-            <div className="border-t border-gray-200 w-full" />
+            <div className="border-t border-gray-200 dark:border-gray-800 w-full" />
+            <span className="bg-white dark:bg-gray-900 px-3 text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider">ou e-mail</span>
+            <div className="border-t border-gray-200 dark:border-gray-800 w-full" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,7 +100,7 @@ export default function Login({ onSignIn, onSignInWithGoogle }: Props) {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
                 required
               />
             </Field>
@@ -111,7 +111,7 @@ export default function Login({ onSignIn, onSignInWithGoogle }: Props) {
                 autoComplete="current-password"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
                 required
               />
             </Field>
@@ -122,7 +122,7 @@ export default function Login({ onSignIn, onSignInWithGoogle }: Props) {
           </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400">
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500">
           Acesso restrito a profissionais cadastrados pela coordenação.
         </p>
       </div>

@@ -157,29 +157,29 @@ export default function AdminUsuarios() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900">👥 Gerenciamento de Profissionais e Usuários</h2>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">👥 Gerenciamento de Profissionais e Usuários</h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
           Cadastre profissionais, defina senhas ou autorize contas Google sem precisar acessar o Firebase.
         </p>
       </div>
 
       {erro && <ErroBanner mensagem={erro} onRetry={() => setErro(null)} />}
       {sucesso && (
-        <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+        <div className="rounded-lg bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900/50 p-3 text-sm text-green-800 dark:text-green-300">
           ✓ {sucesso}
         </div>
       )}
 
       {/* Formulário de cadastro de usuário */}
-      <form onSubmit={handleCriar} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+      <form onSubmit={handleCriar} className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-700">Cadastrar Nova Profissional</h3>
-          <div className="flex bg-white rounded-lg p-0.5 border border-gray-200 text-xs">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Cadastrar Nova Profissional</h3>
+          <div className="flex bg-white dark:bg-gray-800 rounded-lg p-0.5 border border-gray-200 dark:border-gray-700 text-xs">
             <button
               type="button"
               onClick={() => setTipoCadastro('emailGoogle')}
-              className={`px-2.5 py-1 rounded font-medium ${
-                tipoCadastro === 'emailGoogle' ? 'bg-brand-600 text-white' : 'text-gray-600'
+              className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                tipoCadastro === 'emailGoogle' ? 'bg-brand-600 text-white' : 'text-gray-600 dark:text-gray-400'
               }`}
             >
               Google (Gmail/Institucional)
@@ -187,8 +187,8 @@ export default function AdminUsuarios() {
             <button
               type="button"
               onClick={() => setTipoCadastro('emailSenha')}
-              className={`px-2.5 py-1 rounded font-medium ${
-                tipoCadastro === 'emailSenha' ? 'bg-brand-600 text-white' : 'text-gray-600'
+              className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                tipoCadastro === 'emailSenha' ? 'bg-brand-600 text-white' : 'text-gray-600 dark:text-gray-400'
               }`}
             >
               Criar E-mail e Senha
@@ -203,7 +203,7 @@ export default function AdminUsuarios() {
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Ex: Dra. Mariana Costa"
-              className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
+              className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
               required
             />
           </Field>
@@ -213,7 +213,7 @@ export default function AdminUsuarios() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="mariana@hospital.com"
-              className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
+              className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
               required
             />
           </Field>
@@ -225,7 +225,7 @@ export default function AdminUsuarios() {
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="******"
-                className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
+                className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
                 required
               />
             </Field>
@@ -235,7 +235,7 @@ export default function AdminUsuarios() {
             <select
               value={perfil}
               onChange={(e) => setPerfil(e.target.value as Perfil)}
-              className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
+              className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
             >
               {PERFIL.map((p) => (
                 <option key={p} value={p}>
@@ -257,29 +257,29 @@ export default function AdminUsuarios() {
       {loading ? (
         <Spinner label="Carregando usuários..." />
       ) : (
-        <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-800">
               <tr>
-                <th className="text-left px-4 py-2.5 font-medium text-gray-600">Profissional</th>
-                <th className="text-left px-4 py-2.5 font-medium text-gray-600">Perfil</th>
-                <th className="text-center px-4 py-2.5 font-medium text-gray-600 w-24">Status</th>
-                <th className="text-right px-4 py-2.5 font-medium text-gray-600 w-36">Ações</th>
+                <th className="text-left px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400">Profissional</th>
+                <th className="text-left px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400">Perfil</th>
+                <th className="text-center px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400 w-24">Status</th>
+                <th className="text-right px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400 w-36">Ações</th>
               </tr>
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr key={u.id} className={`border-t border-gray-100 ${!u.ativo ? 'opacity-50 bg-gray-50' : ''}`}>
+                <tr key={u.id} className={`border-t border-gray-100 dark:border-gray-800 ${!u.ativo ? 'opacity-50 bg-gray-50 dark:bg-gray-950/40' : ''}`}>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900">{u.nome}</div>
-                    <div className="text-xs text-gray-500">{u.email}</div>
-                    <div className="text-[11px] font-mono text-gray-400 truncate max-w-[200px]">UID: {u.id}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{u.nome}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{u.email}</div>
+                    <div className="text-[11px] font-mono text-gray-400 dark:text-gray-500 truncate max-w-[200px]">UID: {u.id}</div>
                   </td>
                   <td className="px-4 py-3">
                     <select
                       value={u.perfil}
                       onChange={(e) => handleMudarPerfil(u, e.target.value as Perfil)}
-                      className="text-xs rounded border border-gray-300 px-2 py-1 bg-white focus:ring-brand-500"
+                      className="text-xs rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-2 py-1 focus:ring-brand-500"
                     >
                       {PERFIL.map((p) => (
                         <option key={p} value={p}>
@@ -291,7 +291,7 @@ export default function AdminUsuarios() {
                   <td className="px-4 py-3 text-center">
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        u.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        u.ativo ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300 border dark:border-green-800/50' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                       }`}
                     >
                       {u.ativo ? 'Ativo' : 'Inativo'}
@@ -319,7 +319,7 @@ export default function AdminUsuarios() {
               ))}
               {usuarios.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-gray-400 text-sm">
+                  <td colSpan={4} className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
                     Nenhum usuário cadastrado na coleção 'usuarios'.
                   </td>
                 </tr>

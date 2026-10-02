@@ -135,13 +135,15 @@ export default function AdminListas() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-        <h1 className="text-xl font-bold text-gray-900">⚙️ Painel da Coordenação / Admin</h1>
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">⚙️ Painel da Coordenação / Admin</h1>
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
           <button
             onClick={() => setSecao('listas')}
             className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
-              secao === 'listas' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+              secao === 'listas'
+                ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Listas & Domínios
@@ -149,7 +151,9 @@ export default function AdminListas() {
           <button
             onClick={() => setSecao('usuarios')}
             className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
-              secao === 'usuarios' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+              secao === 'usuarios'
+                ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Gerenciar Usuários
@@ -170,7 +174,7 @@ export default function AdminListas() {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   chaveAtiva === chave
                     ? 'bg-brand-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 {NOMES_DOMINIO[chave]}
@@ -190,7 +194,7 @@ export default function AdminListas() {
             onChange={(e) => setNovoValor(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && adicionarItem()}
             placeholder={`Novo valor para ${NOMES_DOMINIO[chaveAtiva]}…`}
-            className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </Field>
         <div className="flex items-end">
@@ -208,29 +212,29 @@ export default function AdminListas() {
       {loading && <Spinner />}
 
       {!loading && (
-        <div className="rounded-xl border border-gray-200 overflow-hidden">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-800">
               <tr>
-                <th className="text-left px-4 py-2 font-medium text-gray-600">Valor</th>
-                <th className="text-center px-4 py-2 font-medium text-gray-600 w-20">Status</th>
-                <th className="text-right px-4 py-2 font-medium text-gray-600 w-28">Ações</th>
+                <th className="text-left px-4 py-2 font-medium text-gray-600 dark:text-gray-400">Valor</th>
+                <th className="text-center px-4 py-2 font-medium text-gray-600 dark:text-gray-400 w-20">Status</th>
+                <th className="text-right px-4 py-2 font-medium text-gray-600 dark:text-gray-400 w-28">Ações</th>
               </tr>
             </thead>
             <tbody>
               {itens.map((item) => (
                 <tr
                   key={item.id}
-                  className={`border-t border-gray-100 ${!item.ativo ? 'opacity-40' : ''}`}
+                  className={`border-t border-gray-100 dark:border-gray-800 ${!item.ativo ? 'opacity-40' : ''}`}
                 >
                   <td className="px-4 py-3">
-                    {item.valor}
+                    <span className="text-gray-900 dark:text-gray-100">{item.valor}</span>
                     {!item.ativo && (
-                      <span className="ml-2 text-xs text-gray-400">(inativo)</span>
+                      <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">(inativo)</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`inline-block w-2 h-2 rounded-full ${item.ativo ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <span className={`inline-block w-2 h-2 rounded-full ${item.ativo ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-700'}`} />
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex gap-1 justify-end">

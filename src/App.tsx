@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth }         from '@/hooks/useAuth'
+import { ThemeProvider }   from '@/hooks/useTheme'
 import { Spinner }         from '@/components/ui'
 import Login               from '@/pages/Login'
 import Layout              from '@/components/Layout'
@@ -65,17 +66,19 @@ export default function App() {
   const isAdmin = state.usuario.perfil === 'admin'
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout authState={state} onSignOut={signOut} />}>
-          <Route index element={<LancarProducao authState={state} />} />
-          <Route path="painel" element={<PainelDia />} />
-          {isAdmin && (
-            <Route path="admin" element={<AdminListas />} />
-          )}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout authState={state} onSignOut={signOut} />}>
+            <Route index element={<LancarProducao authState={state} />} />
+            <Route path="painel" element={<PainelDia />} />
+            {isAdmin && (
+              <Route path="admin" element={<AdminListas />} />
+            )}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
