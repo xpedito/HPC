@@ -52,7 +52,13 @@ export function SelectComCriacao({
     }
   }
 
-  const todasOpcoes = Array.from(new Set([...options, ...(value ? [String(value)] : [])]))
+  // Se o valor selecionado existir e não estiver na lista de opções (ex: vindo de edição ou default), mantém na lista para não quebrar a seleção
+  const todasOpcoes = Array.from(
+    new Set([
+      ...options,
+      ...(value && String(value).trim() !== '' ? [String(value)] : []),
+    ])
+  )
 
   return (
     <>

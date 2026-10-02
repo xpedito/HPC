@@ -10,6 +10,7 @@ import {
   where,
   limit,
   orderBy,
+  onSnapshot,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { DOMINIO_CAMPO_MAP } from '@/schemas/registro'
@@ -46,29 +47,33 @@ export default function AdminListas() {
   const [novoValor, setNovoValor] = useState('')
   const [salvando, setSalvando]   = useState(false)
 
-  async function carregarItens(chave: string) {
+  useEffect(() => {
     setLoading(true)
     setErro(null)
-    try {
-      const q = query(
-        collection(db, 'dominios', chave, 'itens'),
-        orderBy('ordem', 'asc'),
-      )
-      const snap = await getDocs(q)
-      setItens(snap.docs.map((d) => ({
-        id:    d.id,
-        valor: d.data().valor as string,
-        ordem: d.data().ordem as number,
-        ativo: d.data().ativo as boolean,
-      })))
-    } catch (e) {
-      setErro((e as Error).message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { carregarItens(chaveAtiva) }, [chaveAtiva])
+    const q = query(
+      collection(db, 'dominios', chaveAtiva, 'itens'),
+      orderBy('ordem', 'asc'),
+    )
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        setItens(
+          snap.docs.map((d) => ({
+            id:    d.id,
+            valor: d.data().valor as string,
+            ordem: d.data().ordem as number,
+            ativo: d.data().ativo as boolean,
+          }))
+        )
+        setLoading(false)
+      },
+      (e) => {
+        setErro(e.message)
+        setLoading(false)
+      }
+    )
+    return () => unsubscribe()
+  }, [chaveAtiva])
 
   /** Verifica se o item está em uso antes de excluir */
   async function itemEmUso(valor: string): Promise<boolean> {
@@ -90,7 +95,6 @@ export default function AdminListas() {
     } else {
       await updateDoc(doc(db, 'dominios', chaveAtiva, 'itens', item.id), { ativo: true })
     }
-    await carregarItens(chaveAtiva)
   }
 
   async function excluirItem(item: DominioItem) {
@@ -102,7 +106,6 @@ export default function AdminListas() {
     }
     if (!confirm(`Excluir "${item.valor}"? Esta ação não pode ser desfeita.`)) return
     await deleteDoc(doc(db, 'dominios', chaveAtiva, 'itens', item.id))
-    await carregarItens(chaveAtiva)
   }
 
   async function adicionarItem() {
@@ -125,7 +128,6 @@ export default function AdminListas() {
         ativo: true,
       })
       setNovoValor('')
-      await carregarItens(chaveAtiva)
     } catch (e) {
       setErro((e as Error).message)
     } finally {
