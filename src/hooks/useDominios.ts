@@ -32,20 +32,21 @@ export function useDominios() {
 
     try {
       unsubs = CHAVES_DOMINIO_LIST.map((chave) => {
-        const q = query(
-          collection(db, 'dominios', chave, 'itens'),
-          where('ativo', '==', true),
-          orderBy('ordem', 'asc'),
-        )
+        // Consulta simples por coleção sem exigir índice composto (ordena em memória)
+        const q = collection(db, 'dominios', chave, 'itens')
         return onSnapshot(
           q,
           (snap) => {
-            const itens = snap.docs.map((d) => ({
-              id:    d.id,
-              valor: d.data().valor as string,
-              ordem: d.data().ordem as number,
-              ativo: d.data().ativo as boolean,
-            }))
+            const itens = snap.docs
+              .map((d) => ({
+                id:    d.id,
+                valor: (d.data().valor ?? '') as string,
+                ordem: (d.data().ordem ?? 0) as number,
+                ativo: d.data().ativo !== false, // default true
+              }))
+              .filter((i) => i.ativo && i.valor.trim() !== '')
+              .sort((a, b) => a.ordem - b.ordem)
+
             setDominios((prev) => ({
               ...prev,
               [chave]: itens,
@@ -60,6 +61,7 @@ export function useDominios() {
         )
       })
     } catch (err: unknown) {
+      console.error('Erro ao configurar listeners de domínio:', err)
       setError(err instanceof Error ? err : new Error(String(err)))
       setLoading(false)
     }

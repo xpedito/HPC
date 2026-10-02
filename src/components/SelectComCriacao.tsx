@@ -52,6 +52,8 @@ export function SelectComCriacao({
     }
   }
 
+  const todasOpcoes = Array.from(new Set([...options, ...(value ? [String(value)] : [])]))
+
   return (
     <>
       <select
@@ -72,7 +74,7 @@ export function SelectComCriacao({
         {placeholder && (
           <option value="">— {placeholder} —</option>
         )}
-        {options.map((o) => (
+        {todasOpcoes.map((o) => (
           <option key={o} value={o}>{o}</option>
         ))}
         {onAddItem && (
