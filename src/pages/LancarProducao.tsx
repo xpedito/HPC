@@ -162,11 +162,43 @@ export default function LancarProducao({ authState }: Props) {
         </Field>
 
         <Field label="Turno" required error={errors.turno?.message}>
-          <Select options={valores('turno')} placeholder="Selecione" error={!!errors.turno} {...register('turno')} />
+          <Controller
+            control={control}
+            name="turno"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('turno')}
+                placeholder="Selecione"
+                error={!!errors.turno}
+                labelCriacao="Novo turno..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('turno', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Eixo" required error={errors.eixo?.message}>
-          <Select options={valores('eixo')} placeholder="Selecione" error={!!errors.eixo} {...register('eixo')} />
+          <Controller
+            control={control}
+            name="eixo"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('eixo')}
+                placeholder="Selecione"
+                error={!!errors.eixo}
+                labelCriacao="Novo eixo..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('eixo', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Setor" required error={errors.setor?.message}>
@@ -338,7 +370,23 @@ export default function LancarProducao({ authState }: Props) {
         )}
 
         <Field label="Frequência" required error={errors.frequencia?.message}>
-          <Select options={valores('frequencia')} placeholder="Selecione" error={!!errors.frequencia} {...register('frequencia')} />
+          <Controller
+            control={control}
+            name="frequencia"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('frequencia')}
+                placeholder="Selecione"
+                error={!!errors.frequencia}
+                labelCriacao="Nova frequência..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('frequencia', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Encaminhamento" required error={errors.encaminhamento?.message}>
