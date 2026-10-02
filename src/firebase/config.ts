@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, connectAuthEmulator } from 'firebase/auth'
+import { initializeApp, getApps, getApp } from 'firebase/app'
+import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -16,6 +16,27 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 
 export const auth = getAuth(app)
 export const db   = getFirestore(app)
+
+/**
+ * Cria usuário no Firebase Auth sem desconectar o administrador logado.
+ * Usa uma instância secundária isolada do Firebase App.
+ */
+export async function criarUsuarioAuthSemDeslogar(email: string, senhaTemp: string): Promise<string> {
+  const secondaryAppName = 'SecondaryAuthApp'
+  const secondaryApp = getApps().some(a => a.name === secondaryAppName)
+    ? getApp(secondaryAppName)
+    : initializeApp(firebaseConfig, secondaryAppName)
+  
+  const secondaryAuth = getAuth(secondaryApp)
+  try {
+    const cred = await createUserWithEmailAndPassword(secondaryAuth, email, senhaTemp)
+    await signOut(secondaryAuth)
+    return cred.user.uid
+  } catch (err) {
+    await signOut(secondaryAuth)
+    throw err
+  }
+}
 
 // Liga o emulador apenas em dev local com VITE_USE_EMULATOR=true
 if (import.meta.env.VITE_USE_EMULATOR === 'true') {

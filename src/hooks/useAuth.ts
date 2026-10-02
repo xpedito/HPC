@@ -7,7 +7,7 @@ import {
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, query, where, getDocs, setDoc, deleteDoc } from 'firebase/firestore'
 import { auth, db } from '@/firebase/config'
 import type { Usuario } from '@/schemas/registro'
 
@@ -27,24 +27,45 @@ export function useAuth() {
         return
       }
       try {
-        const docRef = doc(db, 'usuarios', firebaseUser.uid)
-        const snap = await getDoc(docRef)
+        // 1. Tenta buscar direto por UID
+        let docRef = doc(db, 'usuarios', firebaseUser.uid)
+        let snap = await getDoc(docRef)
+        
+        // 2. Se não achar por UID, busca por email (caso o admin tenha cadastrado antes de a pessoa logar)
+        if (!snap.exists() && firebaseUser.email) {
+          const q = query(
+            collection(db, 'usuarios'),
+            where('email', '==', firebaseUser.email.toLowerCase()),
+          )
+          const querySnap = await getDocs(q)
+          if (!querySnap.empty) {
+            const preDoc = querySnap.docs[0]
+            const preData = preDoc.data()
+            // Se o ID do documento pré-cadastrado não era o UID, migra para o UID
+            if (preDoc.id !== firebaseUser.uid) {
+              await setDoc(docRef, { ...preData, uid: firebaseUser.uid })
+              await deleteDoc(doc(db, 'usuarios', preDoc.id))
+            }
+            snap = await getDoc(docRef)
+          }
+        }
+
         if (!snap.exists()) {
-          console.warn('Documento não encontrado no Firestore para o UID:', firebaseUser.uid)
+          console.warn('Documento não encontrado no Firestore para:', firebaseUser.email, firebaseUser.uid)
           setState({
             status: 'inactive',
             user: firebaseUser,
-            motivo: `Documento "usuarios/${firebaseUser.uid}" não foi encontrado no Firestore. Verifique se o nome da coleção é exatamente "usuarios" e o ID do documento é este UID.`,
+            motivo: `O e-mail "${firebaseUser.email}" não está cadastrado na lista de profissionais autorizados. Solicite ao administrador a liberação do seu acesso.`,
           })
           return
         }
         const data = snap.data() as Omit<Usuario, 'id'>
         if (!data.ativo) {
-          console.warn('Campo ativo é false ou inexistente:', data)
+          console.warn('Campo ativo é false:', data)
           setState({
             status: 'inactive',
             user: firebaseUser,
-            motivo: `Documento encontrado, mas o campo "ativo" está como falso (${String(data.ativo)}). Ele precisa ser boolean true.`,
+            motivo: `Seu usuário (${firebaseUser.email}) está cadastrado, mas está com status "Inativo". Contate o administrador.`,
           })
           return
         }
@@ -59,7 +80,7 @@ export function useAuth() {
         setState({
           status: 'inactive',
           user: firebaseUser,
-          motivo: `Erro ao consultar Firestore: ${msg}. Pode ser regra de segurança ou banco de dados diferente.`,
+          motivo: `Erro ao consultar Firestore: ${msg}.`,
         })
       }
     })

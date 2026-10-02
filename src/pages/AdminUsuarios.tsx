@@ -20,11 +20,12 @@ export default function AdminUsuarios() {
   const [sucesso, setSucesso]     = useState<string | null>(null)
 
   // Formulário de adicionar usuário
-  const [uid, setUid]             = useState('')
-  const [nome, setNome]           = useState('')
-  const [email, setEmail]         = useState('')
-  const [perfil, setPerfil]       = useState<Perfil>('psicologa')
-  const [salvando, setSalvando]   = useState(false)
+  const [tipoCadastro, setTipoCadastro] = useState<'emailSenha' | 'emailGoogle'>('emailGoogle')
+  const [nome, setNome]                 = useState('')
+  const [email, setEmail]               = useState('')
+  const [senha, setSenha]               = useState('')
+  const [perfil, setPerfil]             = useState<Perfil>('psicologa')
+  const [salvando, setSalvando]         = useState(false)
 
   async function carregarUsuarios() {
     setLoading(true)
@@ -101,29 +102,50 @@ export default function AdminUsuarios() {
     e.preventDefault()
     setErro(null)
     setSucesso(null)
-    const targetUid = uid.trim()
-    const targetEmail = email.trim()
+    const targetEmail = email.trim().toLowerCase()
     const targetNome = nome.trim()
 
-    if (!targetUid || !targetEmail || !targetNome) {
-      setErro('Preencha UID, Nome e E-mail.')
+    if (!targetEmail || !targetNome) {
+      setErro('Preencha Nome e E-mail.')
       return
     }
 
     setSalvando(true)
     try {
-      await setDoc(doc(db, 'usuarios', targetUid), {
-        nome: targetNome,
-        email: targetEmail,
-        perfil,
-        ativo: true,
-        criadoEm: serverTimestamp(),
-      })
-      setSucesso(`Usuário ${targetNome} cadastrado com sucesso!`)
-      setUid('')
+      if (tipoCadastro === 'emailSenha') {
+        if (!senha || senha.length < 6) {
+          throw new Error('A senha deve ter no mínimo 6 caracteres.')
+        }
+        // Cria a conta no Firebase Auth sem deslogar o admin
+        const { criarUsuarioAuthSemDeslogar } = await import('@/firebase/config')
+        const novoUid = await criarUsuarioAuthSemDeslogar(targetEmail, senha)
+
+        // Grava no Firestore vinculado ao novo UID
+        await setDoc(doc(db, 'usuarios', novoUid), {
+          nome: targetNome,
+          email: targetEmail,
+          perfil,
+          ativo: true,
+          criadoEm: serverTimestamp(),
+        })
+        setSucesso(`Conta criada! A profissional já pode fazer login com e-mail e senha.`)
+      } else {
+        // Pré-autorização por e-mail (para login com Google)
+        // Cria um documento com ID gerado ou baseado no email limpo
+        const docId = `email_${targetEmail.replace(/[^a-zA-Z0-9]/g, '_')}`
+        await setDoc(doc(db, 'usuarios', docId), {
+          nome: targetNome,
+          email: targetEmail,
+          perfil,
+          ativo: true,
+          criadoEm: serverTimestamp(),
+        })
+        setSucesso(`Acesso autorizado para "${targetEmail}". Assim que ela clicar em "Entrar com Google", o acesso será liberado automaticamente!`)
+      }
+
       setNome('')
       setEmail('')
-      setPerfil('psicologa')
+      setSenha('')
       await carregarUsuarios()
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Falha ao salvar usuário.')
@@ -135,9 +157,9 @@ export default function AdminUsuarios() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900">👥 Gerenciamento de Usuários</h2>
+        <h2 className="text-lg font-bold text-gray-900">👥 Gerenciamento de Profissionais e Usuários</h2>
         <p className="text-xs text-gray-500 mt-0.5">
-          Libere ou revogue acesso de psicólogas e administradores. O UID é gerado pelo Firebase Auth ao criar conta ou logar com o Google.
+          Cadastre profissionais, defina senhas ou autorize contas Google sem precisar acessar o Firebase.
         </p>
       </div>
 
@@ -149,19 +171,32 @@ export default function AdminUsuarios() {
       )}
 
       {/* Formulário de cadastro de usuário */}
-      <form onSubmit={handleCriar} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700">Autorizar novo usuário</h3>
+      <form onSubmit={handleCriar} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-700">Cadastrar Nova Profissional</h3>
+          <div className="flex bg-white rounded-lg p-0.5 border border-gray-200 text-xs">
+            <button
+              type="button"
+              onClick={() => setTipoCadastro('emailGoogle')}
+              className={`px-2.5 py-1 rounded font-medium ${
+                tipoCadastro === 'emailGoogle' ? 'bg-brand-600 text-white' : 'text-gray-600'
+              }`}
+            >
+              Google (Gmail/Institucional)
+            </button>
+            <button
+              type="button"
+              onClick={() => setTipoCadastro('emailSenha')}
+              className={`px-2.5 py-1 rounded font-medium ${
+                tipoCadastro === 'emailSenha' ? 'bg-brand-600 text-white' : 'text-gray-600'
+              }`}
+            >
+              Criar E-mail e Senha
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="User UID (do Firebase Auth)" required hint="Copie o UID gerado pelo Firebase Auth ou informe o UID do Google">
-            <input
-              type="text"
-              value={uid}
-              onChange={(e) => setUid(e.target.value)}
-              placeholder="ex: pQwErTy12345..."
-              className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
-              required
-            />
-          </Field>
           <Field label="Nome da profissional" required>
             <input
               type="text"
@@ -172,7 +207,7 @@ export default function AdminUsuarios() {
               required
             />
           </Field>
-          <Field label="E-mail institucional/Google" required>
+          <Field label="E-mail" required hint={tipoCadastro === 'emailGoogle' ? 'O e-mail que ela usa no Google' : 'E-mail para login'}>
             <input
               type="email"
               value={email}
@@ -182,6 +217,20 @@ export default function AdminUsuarios() {
               required
             />
           </Field>
+
+          {tipoCadastro === 'emailSenha' && (
+            <Field label="Senha temporária" required hint="Mínimo de 6 caracteres">
+              <input
+                type="password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="******"
+                className="block w-full min-h-tap rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-brand-500 focus:border-brand-500"
+                required
+              />
+            </Field>
+          )}
+
           <Field label="Perfil de Acesso" required>
             <select
               value={perfil}
@@ -196,9 +245,10 @@ export default function AdminUsuarios() {
             </select>
           </Field>
         </div>
+
         <div className="pt-2 flex justify-end">
           <Button type="submit" variant="primary" loading={salvando}>
-            Salvar e Autorizar Acesso
+            {tipoCadastro === 'emailSenha' ? 'Criar Usuário e Senha' : 'Autorizar E-mail Google'}
           </Button>
         </div>
       </form>
