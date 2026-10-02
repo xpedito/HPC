@@ -78,6 +78,8 @@ function TabelaDistribuicao({ titulo, linhas, total }: {
   )
 }
 
+import { GraficoBarrasHorizontal, GraficoEvolucaoDias } from '@/components/Graficos'
+
 export default function PainelDia() {
   const hoje = toDateString(new Date())
   const [dataSelecionada, setDataSelecionada] = useState(hoje)
@@ -85,19 +87,40 @@ export default function PainelDia() {
   const anoMes = toAnoMes(dataSelecionada)
   const { docs: docsMes, loading } = useRegistrosMes(anoMes)
 
-  const { indDia, indMes, tabSetorMes, tabPublicoMes, tabDemandaMes } = useMemo(() => {
+  const { indDia, indMes, tabSetorMes, tabPublicoMes, tabDemandaMes, evolucaoDias } = useMemo(() => {
     const docsD = filtrarPorDia(docsMes, dataSelecionada)
     const docsM = filtrarAcumuladoMes(docsMes, dataSelecionada)
 
     const diasDecorridos = diasDecorridosNoMes(anoMes, dataSelecionada)
     const diasMes        = diasNoMes(anoMes)
 
+    // Agrupamento por dia do mês para o gráfico de evolução
+    const diasMap = new Map<string, { total: number; atendimentos: number }>()
+    docsM.forEach((d) => {
+      const dataStr = typeof d.data === 'string' ? d.data.slice(0, 10) : d.data.toISOString().slice(0, 10)
+      const atual = diasMap.get(dataStr) || { total: 0, atendimentos: 0 }
+      atual.total += 1
+      if (d.houveAtendimento === 'Sim') {
+        atual.atendimentos += 1
+      }
+      diasMap.set(dataStr, atual)
+    })
+
+    const evolucaoDias = Array.from(diasMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dia, valores]) => ({
+        dia,
+        total: valores.total,
+        atendimentos: valores.atendimentos,
+      }))
+
     return {
-      indDia:      calcularIndicadores(docsD, 1, diasMes),
-      indMes:      calcularIndicadores(docsM, diasDecorridos, diasMes),
-      tabSetorMes:  tabelaPorSetor(docsM),
-      tabPublicoMes: tabelaPorPublico(docsM),
-      tabDemandaMes: tabelaPorDemanda(docsM),
+      indDia:        calcularIndicadores(docsD, 1, diasMes),
+      indMes:        calcularIndicadores(docsM, diasDecorridos, diasMes),
+      tabSetorMes:   tabelaPorSetor(docsM),
+      tabPublicoMes:  tabelaPorPublico(docsM),
+      tabDemandaMes:  tabelaPorDemanda(docsM),
+      evolucaoDias,
     }
   }, [docsMes, dataSelecionada, anoMes])
 
@@ -174,6 +197,40 @@ export default function PainelDia() {
                 {Math.round(indMes.projecaoMes)} registros
               </p>
             </div>
+          </div>
+
+          {/* Gráficos dinâmicos */}
+          <div className="space-y-4 pt-2">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+              Visão Gráfica da Produção
+            </h2>
+
+            {/* Evolução diária no mês */}
+            {evolucaoDias.length > 0 && (
+              <GraficoEvolucaoDias
+                titulo={`Evolução diária (${anoMes})`}
+                dados={evolucaoDias}
+              />
+            )}
+
+            {/* Setores com maior volume */}
+            <GraficoBarrasHorizontal
+              titulo="Top Setores Atendidos"
+              subtitulo="Volume acumulado"
+              dados={tabSetorMes.linhas.map((l) => ({
+                label: l.categoria,
+                valor: l.total,
+              }))}
+            />
+
+            {/* Distribuição por público */}
+            <GraficoBarrasHorizontal
+              titulo="Distribuição por Público"
+              dados={tabPublicoMes.linhas.map((l) => ({
+                label: l.categoria,
+                valor: l.total,
+              }))}
+            />
           </div>
 
           {/* Qualidade do preenchimento */}
