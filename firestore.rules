@@ -33,16 +33,17 @@ service cloud.firestore {
 
     // ─── dominios (lista de domínios) ─────────────────────────────────────────
     // Leitura: qualquer usuário ativo (o formulário precisa carregar as listas).
-    // Escrita: só admin.
+    // Criação: qualquer usuário ativo pode adicionar itens na lista direto pelo formulário.
+    // Atualização/Exclusão: apenas admin.
     match /dominios/{dominioId} {
       allow read: if isActiveUser();
       allow write: if isAdmin();
 
       // ─── dominios/{chave}/itens ─────────────────────────────────────────────
-      // Mesmas regras do pai.
       match /itens/{itemId} {
         allow read: if isActiveUser();
-        allow write: if isAdmin();
+        allow create: if isActiveUser();
+        allow update, delete: if isAdmin();
       }
     }
 

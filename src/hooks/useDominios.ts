@@ -5,6 +5,7 @@ import {
   query,
   orderBy,
   where,
+  addDoc,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import type { DominioItem } from '@/schemas/registro'
@@ -25,7 +26,6 @@ export function useDominios() {
 
     async function load() {
       try {
-        // Lista todos os documentos de cada domínio conhecido
         const chaves = [
           'turno', 'eixo', 'setor', 'publico', 'origemContato',
           'localIntervencao', 'procedimento', 'demanda', 'situacaoEspecifica',
@@ -72,5 +72,36 @@ export function useDominios() {
     return (dominios[chave] ?? []).map((i) => i.valor)
   }
 
-  return { dominios, loading, error, valores }
+  /** Adiciona um novo item ao domínio diretamente pelo formulário */
+  async function adicionarItem(chave: string, novoValor: string): Promise<string> {
+    const valor = novoValor.trim()
+    if (!valor) throw new Error('Valor não pode ser vazio.')
+
+    const itensAtuais = dominios[chave] || []
+    const jaExiste = itensAtuais.some((i) => i.valor.toLowerCase() === valor.toLowerCase())
+    if (jaExiste) return valor
+
+    const ordemMax = itensAtuais.reduce((max, i) => Math.max(max, i.ordem), -1)
+    const novoItemData = {
+      valor,
+      ordem: ordemMax + 1,
+      ativo: true,
+    }
+
+    const ref = await addDoc(collection(db, 'dominios', chave, 'itens'), novoItemData)
+
+    const novoItem: DominioItem = {
+      id: ref.id,
+      ...novoItemData,
+    }
+
+    setDominios((prev) => ({
+      ...prev,
+      [chave]: [...(prev[chave] || []), novoItem],
+    }))
+
+    return valor
+  }
+
+  return { dominios, loading, error, valores, adicionarItem }
 }

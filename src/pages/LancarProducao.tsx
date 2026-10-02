@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useForm, type SubmitHandler } from 'react-hook-form'
+import { useForm, Controller, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { RegistroInputSchema, toDateString, turnoSugerido, toAnoMes } from '@/schemas/registro'
@@ -7,6 +7,7 @@ import type { RegistroDoc } from '@/schemas/registro'
 import { useDominios } from '@/hooks/useDominios'
 import { useRegistrosMes, useRegistrosCrud } from '@/hooks/useRegistros'
 import { Field, Select, Button, Spinner, ErroBanner } from '@/components/ui'
+import { SelectComCriacao } from '@/components/SelectComCriacao'
 import { filtrarPorDia } from '@/logic/indicadores'
 import type { AuthState } from '@/hooks/useAuth'
 
@@ -32,7 +33,7 @@ export default function LancarProducao({ authState }: Props) {
   const hoje = toDateString(new Date())
   const { usuario } = authState
 
-  const { valores, loading: loadingDominios } = useDominios()
+  const { valores, adicionarItem, loading: loadingDominios } = useDominios()
   const anoMes = toAnoMes(hoje)
   const { docs: docsMes, loading: loadingDocs } = useRegistrosMes(anoMes)
   const { salvar, atualizar, excluir, saving, erro: erroSalvar } = useRegistrosCrud(
@@ -45,10 +46,12 @@ export default function LancarProducao({ authState }: Props) {
 
   const {
     register,
+    control,
     handleSubmit,
     watch,
     reset,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(RegistroInputSchema),
@@ -167,15 +170,63 @@ export default function LancarProducao({ authState }: Props) {
         </Field>
 
         <Field label="Setor" required error={errors.setor?.message}>
-          <Select options={valores('setor')} placeholder="Selecione" error={!!errors.setor} {...register('setor')} />
+          <Controller
+            control={control}
+            name="setor"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('setor')}
+                placeholder="Selecione"
+                error={!!errors.setor}
+                labelCriacao="Novo setor..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('setor', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Público" required error={errors.publico?.message}>
-          <Select options={valores('publico')} placeholder="Selecione" error={!!errors.publico} {...register('publico')} />
+          <Controller
+            control={control}
+            name="publico"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('publico')}
+                placeholder="Selecione"
+                error={!!errors.publico}
+                labelCriacao="Novo público..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('publico', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Origem do contato" required error={errors.origemContato?.message}>
-          <Select options={valores('origemContato')} placeholder="Selecione" error={!!errors.origemContato} {...register('origemContato')} />
+          <Controller
+            control={control}
+            name="origemContato"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('origemContato')}
+                placeholder="Selecione"
+                error={!!errors.origemContato}
+                labelCriacao="Nova origem de contato..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('origemContato', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Houve atendimento psicológico?" required error={errors.houveAtendimento?.message}>
@@ -183,26 +234,106 @@ export default function LancarProducao({ authState }: Props) {
         </Field>
 
         <Field label="Modalidade" required error={errors.modalidade?.message}>
-          <Select options={valores('modalidade')} placeholder="Selecione" error={!!errors.modalidade} {...register('modalidade')} />
+          <Controller
+            control={control}
+            name="modalidade"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('modalidade')}
+                placeholder="Selecione"
+                error={!!errors.modalidade}
+                labelCriacao="Nova modalidade..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('modalidade', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Local da intervenção" required error={errors.localIntervencao?.message}>
-          <Select options={valores('localIntervencao')} placeholder="Selecione" error={!!errors.localIntervencao} {...register('localIntervencao')} />
+          <Controller
+            control={control}
+            name="localIntervencao"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('localIntervencao')}
+                placeholder="Selecione"
+                error={!!errors.localIntervencao}
+                labelCriacao="Novo local de intervenção..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('localIntervencao', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Procedimento" required={houveAtendimento === 'Sim'} error={errors.procedimento?.message}>
-          <Select options={valores('procedimento')} placeholder="Selecione" error={!!errors.procedimento} {...register('procedimento')} />
+          <Controller
+            control={control}
+            name="procedimento"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('procedimento')}
+                placeholder="Selecione"
+                error={!!errors.procedimento}
+                labelCriacao="Novo procedimento..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('procedimento', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         {isAssistencia && (
           <Field label="Demanda" required={houveAtendimento === 'Sim'} error={errors.demanda?.message}>
-            <Select options={valores('demanda')} placeholder="Selecione" error={!!errors.demanda} {...register('demanda')} />
+            <Controller
+              control={control}
+              name="demanda"
+              render={({ field }) => (
+                <SelectComCriacao
+                  options={valores('demanda')}
+                  placeholder="Selecione"
+                  error={!!errors.demanda}
+                  labelCriacao="Nova demanda..."
+                  onAddItem={async (val) => {
+                    const criado = await adicionarItem('demanda', val)
+                    field.onChange(criado)
+                  }}
+                  {...field}
+                />
+              )}
+            />
           </Field>
         )}
 
         {isAssistencia && (
           <Field label="Situação específica" error={errors.situacaoEspecifica?.message}>
-            <Select options={valores('situacaoEspecifica')} placeholder="Selecione (opcional)" error={!!errors.situacaoEspecifica} {...register('situacaoEspecifica')} />
+            <Controller
+              control={control}
+              name="situacaoEspecifica"
+              render={({ field }) => (
+                <SelectComCriacao
+                  options={valores('situacaoEspecifica')}
+                  placeholder="Selecione (opcional)"
+                  error={!!errors.situacaoEspecifica}
+                  labelCriacao="Nova situação específica..."
+                  onAddItem={async (val) => {
+                    const criado = await adicionarItem('situacaoEspecifica', val)
+                    field.onChange(criado)
+                  }}
+                  {...field}
+                />
+              )}
+            />
           </Field>
         )}
 
@@ -211,7 +342,23 @@ export default function LancarProducao({ authState }: Props) {
         </Field>
 
         <Field label="Encaminhamento" required error={errors.encaminhamento?.message}>
-          <Select options={valores('encaminhamento')} placeholder="Selecione" error={!!errors.encaminhamento} {...register('encaminhamento')} />
+          <Controller
+            control={control}
+            name="encaminhamento"
+            render={({ field }) => (
+              <SelectComCriacao
+                options={valores('encaminhamento')}
+                placeholder="Selecione"
+                error={!!errors.encaminhamento}
+                labelCriacao="Novo encaminhamento..."
+                onAddItem={async (val) => {
+                  const criado = await adicionarItem('encaminhamento', val)
+                  field.onChange(criado)
+                }}
+                {...field}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Necessita seguimento?" required error={errors.necessitaSeguimento?.message}>
