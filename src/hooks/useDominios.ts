@@ -92,17 +92,7 @@ export function useDominios() {
       ativo: true,
     }
 
-    const ref = await addDoc(collection(db, 'dominios', chave, 'itens'), novoItemData)
-
-    const novoItem: DominioItem = {
-      id: ref.id,
-      ...novoItemData,
-    }
-
-    setDominios((prev) => ({
-      ...prev,
-      [chave]: [...(prev[chave] || []), novoItem],
-    }))
+    await addDoc(collection(db, 'dominios', chave, 'itens'), novoItemData)
 
     return valor
   }

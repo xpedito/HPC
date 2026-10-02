@@ -57,8 +57,8 @@ export function SelectComCriacao({
     }
   }
 
-  // Apenas as opções cadastradas
-  const todasOpcoes = options
+  // Garante lista única de opções cadastradas, sem repetições
+  const todasOpcoes = Array.from(new Set(options.filter(Boolean)))
 
   return (
     <>
