@@ -57,7 +57,7 @@ export default function LancarProducao({ authState }: Props) {
     resolver: zodResolver(RegistroInputSchema),
     defaultValues: {
       data:         hoje,
-      turno:        turnoSugerido(),
+      turno:        '',
       profissional: usuario.nome,
       ...BLANK_DEFAULTS,
     },

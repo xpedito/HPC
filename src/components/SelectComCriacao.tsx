@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface SelectComCriacaoProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   placeholder?: string
@@ -32,8 +33,11 @@ export function SelectComCriacao({
     onChange?.(e)
   }
 
-  const handleSalvarNovo = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSalvarNovo = async (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     const val = novoValor.trim()
     if (!val) return
 
@@ -46,19 +50,15 @@ export function SelectComCriacao({
       setNovoValor('')
       setModalAberto(false)
     } catch (err: unknown) {
+      console.error('Erro ao adicionar item pelo dropdown:', err)
       setErroModal(err instanceof Error ? err.message : 'Falha ao adicionar item.')
     } finally {
       setSalvando(false)
     }
   }
 
-  // Se o valor selecionado existir e não estiver na lista de opções (ex: vindo de edição ou default), mantém na lista para não quebrar a seleção
-  const todasOpcoes = Array.from(
-    new Set([
-      ...options,
-      ...(value && String(value).trim() !== '' ? [String(value)] : []),
-    ])
-  )
+  // Apenas as opções cadastradas
+  const todasOpcoes = options
 
   return (
     <>
@@ -90,9 +90,12 @@ export function SelectComCriacao({
         )}
       </select>
 
-      {/* Modal rápido de adição */}
-      {modalAberto && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {/* Modal rápido de adição renderizado via Portal para isolar completamente do formulário principal */}
+      {modalAberto && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -113,7 +116,7 @@ export function SelectComCriacao({
               </p>
             )}
 
-            <form onSubmit={handleSalvarNovo} className="space-y-4">
+            <div className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Nome do novo item
@@ -123,6 +126,13 @@ export function SelectComCriacao({
                   autoFocus
                   value={novoValor}
                   onChange={(e) => setNovoValor(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleSalvarNovo()
+                    }
+                  }}
                   placeholder="Ex: Ambulatório de Especialidades"
                   className="block w-full min-h-tap rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-base focus:ring-2 focus:ring-brand-500 focus:outline-none"
                   required
@@ -138,16 +148,18 @@ export function SelectComCriacao({
                   Cancelar
                 </button>
                 <button
-                  type="submit"
+                  type="button"
                   disabled={salvando}
+                  onClick={handleSalvarNovo}
                   className="px-4 py-2 text-sm font-medium rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
                 >
                   {salvando ? 'Salvando…' : 'Salvar e Selecionar'}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
