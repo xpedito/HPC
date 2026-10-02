@@ -16,6 +16,8 @@ import { DOMINIO_CAMPO_MAP } from '@/schemas/registro'
 import type { DominioItem } from '@/schemas/registro'
 import { Button, Field, Spinner, ErroBanner } from '@/components/ui'
 
+import AdminUsuarios from '@/pages/AdminUsuarios'
+
 const CHAVES_DOMINIO = Object.keys(DOMINIO_CAMPO_MAP)
 
 const NOMES_DOMINIO: Record<string, string> = {
@@ -34,6 +36,7 @@ const NOMES_DOMINIO: Record<string, string> = {
 }
 
 export default function AdminListas() {
+  const [secao, setSecao]           = useState<'listas' | 'usuarios'>('listas')
   const [chaveAtiva, setChaveAtiva] = useState(CHAVES_DOMINIO[0])
   const [itens, setItens]           = useState<DominioItem[]>([])
   const [loading, setLoading]       = useState(false)
@@ -132,24 +135,48 @@ export default function AdminListas() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">⚙️ Administração de listas</h1>
-
-      {/* Seletor de domínio */}
-      <div className="flex flex-wrap gap-2">
-        {CHAVES_DOMINIO.map((chave) => (
+      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+        <h1 className="text-xl font-bold text-gray-900">⚙️ Painel da Coordenação / Admin</h1>
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
           <button
-            key={chave}
-            onClick={() => setChaveAtiva(chave)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              chaveAtiva === chave
-                ? 'bg-brand-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            onClick={() => setSecao('listas')}
+            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+              secao === 'listas' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
             }`}
           >
-            {NOMES_DOMINIO[chave]}
+            Listas & Domínios
           </button>
-        ))}
+          <button
+            onClick={() => setSecao('usuarios')}
+            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+              secao === 'usuarios' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Gerenciar Usuários
+          </button>
+        </div>
       </div>
+
+      {secao === 'usuarios' ? (
+        <AdminUsuarios />
+      ) : (
+        <>
+          {/* Seletor de domínio */}
+          <div className="flex flex-wrap gap-2">
+            {CHAVES_DOMINIO.map((chave) => (
+              <button
+                key={chave}
+                onClick={() => setChaveAtiva(chave)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  chaveAtiva === chave
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {NOMES_DOMINIO[chave]}
+              </button>
+            ))}
+          </div>
 
       {/* Erro */}
       {erro && <ErroBanner mensagem={erro} onRetry={() => setErro(null)} />}
@@ -235,6 +262,8 @@ export default function AdminListas() {
             </tbody>
           </table>
         </div>
+      )}
+        </>
       )}
     </div>
   )

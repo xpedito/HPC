@@ -8,7 +8,7 @@ import PainelDia           from '@/pages/PainelDia'
 import AdminListas         from '@/pages/AdminListas'
 
 export default function App() {
-  const { state, signIn, signOut } = useAuth()
+  const { state, signIn, signInWithGoogle, signOut } = useAuth()
 
   // ── Carregando estado inicial ──────────────────────────────────────────────
   if (state.status === 'loading') {
@@ -25,13 +25,15 @@ export default function App() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="text-center space-y-2">
           <p className="text-2xl">🔒</p>
-          <p className="font-medium text-gray-800">Conta desativada</p>
-          <p className="text-sm text-gray-500">Entre em contato com o administrador.</p>
+          <p className="font-medium text-gray-800">Conta desativada ou não autorizada</p>
+          <p className="text-sm text-gray-500">
+            Seu login foi autenticado, mas seu acesso precisa ser autorizado por um administrador no sistema.
+          </p>
           <button
             onClick={signOut}
-            className="text-sm text-brand-600 underline"
+            className="text-sm text-brand-600 underline font-medium mt-2 inline-block"
           >
-            Sair
+            Sair e tentar outra conta
           </button>
         </div>
       </div>
@@ -40,7 +42,7 @@ export default function App() {
 
   // ── Não autenticado ────────────────────────────────────────────────────────
   if (state.status === 'unauthenticated') {
-    return <Login onSignIn={signIn} />
+    return <Login onSignIn={signIn} onSignInWithGoogle={signInWithGoogle} />
   }
 
   // ── Autenticado ────────────────────────────────────────────────────────────

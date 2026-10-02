@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth'
@@ -46,12 +48,16 @@ export function useAuth() {
 
   async function signIn(email: string, password: string) {
     await signInWithEmailAndPassword(auth, email, password)
-    // onAuthStateChanged cuida do estado
+  }
+
+  async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider()
+    await signInWithPopup(auth, provider)
   }
 
   async function signOut() {
     await firebaseSignOut(auth)
   }
 
-  return { state, signIn, signOut }
+  return { state, signIn, signInWithGoogle, signOut }
 }
