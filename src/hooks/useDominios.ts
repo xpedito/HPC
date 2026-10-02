@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   collection,
-  getDocs,
+  onSnapshot,
   query,
   orderBy,
   where,
@@ -13,8 +13,14 @@ import type { DominioItem } from '@/schemas/registro'
 /** Mapa completo de todos os domínios: { chave: DominioItem[] } */
 export type DominiosMap = Record<string, DominioItem[]>
 
-/** Hook que carrega TODOS os domínios ativos de uma vez ao montar.
- *  Os domínios mudam raramente — um único fetch por sessão é suficiente.
+const CHAVES_DOMINIO_LIST = [
+  'turno', 'eixo', 'setor', 'publico', 'origemContato',
+  'localIntervencao', 'procedimento', 'demanda', 'situacaoEspecifica',
+  'frequencia', 'encaminhamento', 'modalidade',
+]
+
+/** Hook que sincroniza em tempo real TODOS os domínios ativos via onSnapshot.
+ *  Qualquer item adicionado no Admin ou em outra aba reflete instantaneamente!
  */
 export function useDominios() {
   const [dominios, setDominios] = useState<DominiosMap>({})
@@ -22,49 +28,45 @@ export function useDominios() {
   const [error, setError]       = useState<Error | null>(null)
 
   useEffect(() => {
-    let cancelled = false
+    let unsubs: Array<() => void> = []
 
-    async function load() {
-      try {
-        const chaves = [
-          'turno', 'eixo', 'setor', 'publico', 'origemContato',
-          'localIntervencao', 'procedimento', 'demanda', 'situacaoEspecifica',
-          'frequencia', 'encaminhamento', 'modalidade',
-        ]
-
-        const resultado: DominiosMap = {}
-
-        await Promise.all(
-          chaves.map(async (chave) => {
-            const q = query(
-              collection(db, 'dominios', chave, 'itens'),
-              where('ativo', '==', true),
-              orderBy('ordem', 'asc'),
-            )
-            const snap = await getDocs(q)
-            resultado[chave] = snap.docs.map((d) => ({
+    try {
+      unsubs = CHAVES_DOMINIO_LIST.map((chave) => {
+        const q = query(
+          collection(db, 'dominios', chave, 'itens'),
+          where('ativo', '==', true),
+          orderBy('ordem', 'asc'),
+        )
+        return onSnapshot(
+          q,
+          (snap) => {
+            const itens = snap.docs.map((d) => ({
               id:    d.id,
               valor: d.data().valor as string,
               ordem: d.data().ordem as number,
               ativo: d.data().ativo as boolean,
             }))
-          }),
+            setDominios((prev) => ({
+              ...prev,
+              [chave]: itens,
+            }))
+            setLoading(false)
+          },
+          (err) => {
+            console.error(`Erro ao sincronizar domínio ${chave}:`, err)
+            setError(err)
+            setLoading(false)
+          },
         )
-
-        if (!cancelled) {
-          setDominios(resultado)
-          setLoading(false)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err : new Error(String(err)))
-          setLoading(false)
-        }
-      }
+      })
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err : new Error(String(err)))
+      setLoading(false)
     }
 
-    load()
-    return () => { cancelled = true }
+    return () => {
+      unsubs.forEach((unsub) => unsub())
+    }
   }, [])
 
   /** Retorna os valores de um domínio como array de strings */
