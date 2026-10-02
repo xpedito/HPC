@@ -19,22 +19,36 @@ export default function App() {
     )
   }
 
-  // ── Usuário inativo ────────────────────────────────────────────────────────
+  // ── Usuário inativo / aguardando autorização ───────────────────────────────
   if (state.status === 'inactive') {
+    const user = state.user
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center space-y-2">
-          <p className="text-2xl">🔒</p>
-          <p className="font-medium text-gray-800">Conta desativada ou não autorizada</p>
-          <p className="text-sm text-gray-500">
-            Seu login foi autenticado, mas seu acesso precisa ser autorizado por um administrador no sistema.
+        <div className="max-w-md w-full bg-white border border-gray-200 rounded-xl p-6 shadow-sm text-center space-y-4">
+          <p className="text-3xl">🔒</p>
+          <h2 className="text-lg font-bold text-gray-900">Acesso aguardando autorização</h2>
+          <p className="text-sm text-gray-600">
+            Você está autenticado como <strong>{user.email || 'usuário'}</strong>, mas seu perfil ainda não foi ativado no banco de dados.
           </p>
-          <button
-            onClick={signOut}
-            className="text-sm text-brand-600 underline font-medium mt-2 inline-block"
-          >
-            Sair e tentar outra conta
-          </button>
+
+          <div className="bg-gray-50 rounded-lg p-3 text-left border border-gray-200 text-xs space-y-1">
+            <div className="text-gray-500 font-medium">Seu identificador (UID):</div>
+            <div className="font-mono bg-white p-2 border border-gray-300 rounded text-gray-800 break-all select-all">
+              {user.uid}
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Copie este UID para cadastrar na coleção <code>usuarios</code> do Firestore.
+            </p>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={signOut}
+              className="text-sm text-brand-600 hover:text-brand-800 underline font-medium"
+            >
+              Sair e tentar outra conta
+            </button>
+          </div>
         </div>
       </div>
     )
