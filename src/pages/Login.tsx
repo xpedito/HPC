@@ -19,8 +19,16 @@ export default function Login({ onSignIn, onSignInWithGoogle }: Props) {
     setLoading(true)
     try {
       await onSignIn(email, senha)
-    } catch {
-      setErro('E-mail ou senha incorretos. Verifique suas credenciais.')
+    } catch (err: unknown) {
+      console.error('Erro de autenticação:', err)
+      const code = (err as { code?: string })?.code
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+        setErro('E-mail ou senha incorretos.')
+      } else if (code === 'auth/too-many-requests') {
+        setErro('Muitas tentativas sem sucesso. Tente novamente mais tarde.')
+      } else {
+        setErro((err as Error)?.message || 'Erro ao realizar login.')
+      }
     } finally {
       setLoading(false)
     }

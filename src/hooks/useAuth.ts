@@ -26,22 +26,30 @@ export function useAuth() {
         setState({ status: 'unauthenticated' })
         return
       }
-      // Busca o documento do usuário para verificar ativo e obter perfil
-      const snap = await getDoc(doc(db, 'usuarios', firebaseUser.uid))
-      if (!snap.exists()) {
+      try {
+        // Busca o documento do usuário para verificar ativo e obter perfil
+        const snap = await getDoc(doc(db, 'usuarios', firebaseUser.uid))
+        if (!snap.exists()) {
+          console.warn('Usuário autenticado no Auth, mas sem documento em usuarios/', firebaseUser.uid)
+          setState({ status: 'inactive' })
+          return
+        }
+        const data = snap.data() as Omit<Usuario, 'id'>
+        if (!data.ativo) {
+          console.warn('Usuário inativo:', firebaseUser.uid)
+          setState({ status: 'inactive' })
+          return
+        }
+        setState({
+          status: 'authenticated',
+          user: firebaseUser,
+          usuario: { ...data, id: firebaseUser.uid },
+        })
+      } catch (err) {
+        console.error('Erro ao buscar dados do usuário no Firestore:', err)
+        // Se der erro de permissão ou conexão, não deixar a tela travada sem feedback
         setState({ status: 'inactive' })
-        return
       }
-      const data = snap.data() as Omit<Usuario, 'id'>
-      if (!data.ativo) {
-        setState({ status: 'inactive' })
-        return
-      }
-      setState({
-        status: 'authenticated',
-        user: firebaseUser,
-        usuario: { ...data, id: firebaseUser.uid },
-      })
     })
     return unsub
   }, [])
