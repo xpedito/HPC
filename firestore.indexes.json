@@ -1,0 +1,29 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "registros",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "anoMes",          "order": "ASCENDING" },
+        { "fieldPath": "houveAtendimento","order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "registros",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "anoMes", "order": "ASCENDING" },
+        { "fieldPath": "setor",  "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "registros",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "anoMes", "order": "ASCENDING" },
+        { "fieldPath": "data",   "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Garante que inputs de data não apareçam com ícone de calendário estranho em iOS */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+}
