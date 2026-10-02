@@ -15,7 +15,7 @@ export type AuthState =
   | { status: 'loading' }
   | { status: 'unauthenticated' }
   | { status: 'authenticated'; user: User; usuario: Usuario }
-  | { status: 'inactive'; user: User }  // autenticado mas sem autorização em usuarios/
+  | { status: 'inactive'; user: User; motivo: string }
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({ status: 'loading' })
@@ -27,17 +27,25 @@ export function useAuth() {
         return
       }
       try {
-        // Busca o documento do usuário para verificar ativo e obter perfil
-        const snap = await getDoc(doc(db, 'usuarios', firebaseUser.uid))
+        const docRef = doc(db, 'usuarios', firebaseUser.uid)
+        const snap = await getDoc(docRef)
         if (!snap.exists()) {
-          console.warn('Usuário autenticado no Auth, mas sem documento em usuarios/', firebaseUser.uid)
-          setState({ status: 'inactive', user: firebaseUser })
+          console.warn('Documento não encontrado no Firestore para o UID:', firebaseUser.uid)
+          setState({
+            status: 'inactive',
+            user: firebaseUser,
+            motivo: `Documento "usuarios/${firebaseUser.uid}" não foi encontrado no Firestore. Verifique se o nome da coleção é exatamente "usuarios" e o ID do documento é este UID.`,
+          })
           return
         }
         const data = snap.data() as Omit<Usuario, 'id'>
         if (!data.ativo) {
-          console.warn('Usuário inativo:', firebaseUser.uid)
-          setState({ status: 'inactive', user: firebaseUser })
+          console.warn('Campo ativo é false ou inexistente:', data)
+          setState({
+            status: 'inactive',
+            user: firebaseUser,
+            motivo: `Documento encontrado, mas o campo "ativo" está como falso (${String(data.ativo)}). Ele precisa ser boolean true.`,
+          })
           return
         }
         setState({
@@ -45,9 +53,14 @@ export function useAuth() {
           user: firebaseUser,
           usuario: { ...data, id: firebaseUser.uid },
         })
-      } catch (err) {
-        console.error('Erro ao buscar dados do usuário no Firestore:', err)
-        setState({ status: 'inactive', user: firebaseUser })
+      } catch (err: unknown) {
+        console.error('Erro ao ler documento no Firestore:', err)
+        const msg = err instanceof Error ? err.message : String(err)
+        setState({
+          status: 'inactive',
+          user: firebaseUser,
+          motivo: `Erro ao consultar Firestore: ${msg}. Pode ser regra de segurança ou banco de dados diferente.`,
+        })
       }
     })
     return unsub

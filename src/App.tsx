@@ -28,17 +28,19 @@ export default function App() {
           <p className="text-3xl">🔒</p>
           <h2 className="text-lg font-bold text-gray-900">Acesso aguardando autorização</h2>
           <p className="text-sm text-gray-600">
-            Você está autenticado como <strong>{user.email || 'usuário'}</strong>, mas seu perfil ainda não foi ativado no banco de dados.
+            Você está autenticado como <strong>{user.email || 'usuário'}</strong>.
           </p>
+
+          <div className="bg-amber-50 rounded-lg p-3 text-left border border-amber-200 text-xs space-y-1 text-amber-800">
+            <div className="font-semibold">Diagnóstico:</div>
+            <div>{state.motivo}</div>
+          </div>
 
           <div className="bg-gray-50 rounded-lg p-3 text-left border border-gray-200 text-xs space-y-1">
             <div className="text-gray-500 font-medium">Seu identificador (UID):</div>
             <div className="font-mono bg-white p-2 border border-gray-300 rounded text-gray-800 break-all select-all">
               {user.uid}
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
-              Copie este UID para cadastrar na coleção <code>usuarios</code> do Firestore.
-            </p>
           </div>
 
           <div className="pt-2">
