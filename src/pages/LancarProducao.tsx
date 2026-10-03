@@ -23,10 +23,10 @@ function docDataStr(doc: RegistroDoc): string {
   return toDateString(new Date(doc.data as unknown as string))
 }
 
-const BLANK_DEFAULTS = {
-  acompanhante: 'Não' as const,
-  necessitaSeguimento: 'Não se aplica' as const,
-  houveAtendimento: 'Não' as const,
+const BLANK_DEFAULTS: Partial<FormData> = {
+  acompanhante: undefined,
+  necessitaSeguimento: undefined,
+  houveAtendimento: undefined,
 }
 
 export default function LancarProducao({ authState }: Props) {
@@ -262,7 +262,19 @@ export default function LancarProducao({ authState }: Props) {
         </Field>
 
         <Field label="Houve atendimento psicológico?" required error={errors.houveAtendimento?.message}>
-          <Select options={['Sim', 'Não', 'REVISAR']} error={!!errors.houveAtendimento} {...register('houveAtendimento')} />
+          <Controller
+            control={control}
+            name="houveAtendimento"
+            render={({ field }) => (
+              <Select
+                options={['Sim', 'Não', 'REVISAR']}
+                placeholder="Selecione"
+                error={!!errors.houveAtendimento}
+                {...field}
+                value={field.value ?? ''}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Modalidade" required error={errors.modalidade?.message}>
@@ -410,11 +422,35 @@ export default function LancarProducao({ authState }: Props) {
         </Field>
 
         <Field label="Necessita seguimento?" required error={errors.necessitaSeguimento?.message}>
-          <Select options={['Sim', 'Não', 'Não se aplica']} error={!!errors.necessitaSeguimento} {...register('necessitaSeguimento')} />
+          <Controller
+            control={control}
+            name="necessitaSeguimento"
+            render={({ field }) => (
+              <Select
+                options={['Sim', 'Não', 'Não se aplica']}
+                placeholder="Selecione"
+                error={!!errors.necessitaSeguimento}
+                {...field}
+                value={field.value ?? ''}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Há acompanhante?" required error={errors.acompanhante?.message}>
-          <Select options={['Sim', 'Não']} error={!!errors.acompanhante} {...register('acompanhante')} />
+          <Controller
+            control={control}
+            name="acompanhante"
+            render={({ field }) => (
+              <Select
+                options={['Sim', 'Não']}
+                placeholder="Selecione"
+                error={!!errors.acompanhante}
+                {...field}
+                value={field.value ?? ''}
+              />
+            )}
+          />
         </Field>
 
         <Field label="Idade" hint="Opcional" error={errors.idade?.message}>

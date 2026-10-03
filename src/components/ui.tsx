@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import React, { forwardRef, type ReactNode } from 'react'
 
 interface FieldProps {
   label: string
@@ -35,9 +35,13 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 /** Select padronizado com tap-target de 48px */
-export function Select({ placeholder, options, error, className = '', ...rest }: SelectProps) {
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+  { placeholder, options, error, className = '', ...rest },
+  ref
+) {
   return (
     <select
+      ref={ref}
       className={`
         block w-full min-h-tap rounded-lg border px-3 py-2 text-base
         dark:bg-gray-800 dark:text-gray-100
@@ -58,7 +62,7 @@ export function Select({ placeholder, options, error, className = '', ...rest }:
       ))}
     </select>
   )
-}
+})
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'

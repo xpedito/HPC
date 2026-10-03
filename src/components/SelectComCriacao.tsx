@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, forwardRef } from 'react'
 import { createPortal } from 'react-dom'
 
 interface SelectComCriacaoProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -9,17 +9,20 @@ interface SelectComCriacaoProps extends React.SelectHTMLAttributes<HTMLSelectEle
   labelCriacao?: string
 }
 
-export function SelectComCriacao({
-  placeholder,
-  options,
-  error,
-  className = '',
-  onAddItem,
-  labelCriacao = 'Adicionar novo item...',
-  value,
-  onChange,
-  ...rest
-}: SelectComCriacaoProps) {
+export const SelectComCriacao = forwardRef<HTMLSelectElement, SelectComCriacaoProps>(function SelectComCriacao(
+  {
+    placeholder,
+    options,
+    error,
+    className = '',
+    onAddItem,
+    labelCriacao = 'Adicionar novo item...',
+    value,
+    onChange,
+    ...rest
+  },
+  ref
+) {
   const [modalAberto, setModalAberto] = useState(false)
   const [novoValor, setNovoValor]     = useState('')
   const [salvando, setSalvando]       = useState(false)
@@ -63,6 +66,7 @@ export function SelectComCriacao({
   return (
     <>
       <select
+        ref={ref}
         value={value}
         onChange={handleSelectChange}
         className={`
@@ -163,4 +167,4 @@ export function SelectComCriacao({
       )}
     </>
   )
-}
+})
