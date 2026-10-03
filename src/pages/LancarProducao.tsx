@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useForm, Controller, type SubmitHandler } from 'react-hook-form'
+import { useForm, Controller, type SubmitHandler, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { RegistroInputSchema, toDateString, turnoSugerido, toAnoMes } from '@/schemas/registro'
@@ -43,6 +43,7 @@ export default function LancarProducao({ authState }: Props) {
 
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [erroMsg, setErroMsg] = useState<string | null>(null)
+  const [sucessoMsg, setSucessoMsg] = useState<string | null>(null)
 
   const {
     register,
@@ -74,13 +75,16 @@ export default function LancarProducao({ authState }: Props) {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setErroMsg(null)
+    setSucessoMsg(null)
     try {
       if (editandoId) {
         await atualizar(editandoId, data)
         setEditandoId(null)
+        setSucessoMsg('✓ Alterações salvas com sucesso!')
       }
       else {
         await salvar(data)
+        setSucessoMsg('✓ Lançamento salvo com sucesso!')
       }
       // "Salvar e lançar outro": preserva data, turno, setor, profissional
       reset({
@@ -90,9 +94,24 @@ export default function LancarProducao({ authState }: Props) {
         profissional: usuario.nome,
         ...BLANK_DEFAULTS,
       } as Partial<FormData>)
-    } catch {
-      setErroMsg('Falha ao salvar. Verifique a conexão e tente novamente.')
+      setTimeout(() => setSucessoMsg(null), 4000)
+    } catch (err) {
+      console.error('Erro ao salvar produção:', err)
+      const msg = err instanceof Error ? err.message : 'Falha ao salvar. Verifique a conexão e tente novamente.'
+      setErroMsg(msg)
     }
+  }
+
+  const onInvalid = (fieldErrors: FieldErrors<FormData>) => {
+    console.warn('Erros de validação ao submeter formulário:', fieldErrors)
+    const campos = Object.keys(fieldErrors)
+    setErroMsg(`Preencha todos os campos obrigatórios destacados em vermelho (${campos.length} pendente${campos.length > 1 ? 's' : ''}).`)
+    setTimeout(() => {
+      const primeiro = document.querySelector('.border-red-400, .border-red-500, [aria-invalid="true"]')
+      if (primeiro) {
+        primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 50)
   }
 
   // ─── Edição ───────────────────────────────────────────────────────────────────
@@ -150,7 +169,7 @@ export default function LancarProducao({ authState }: Props) {
       )}
 
       {/* Formulário */}
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="space-y-4">
 
         <Field label="Data" required error={errors.data?.message}>
           <input
@@ -472,6 +491,20 @@ export default function LancarProducao({ authState }: Props) {
             {...register('observacao')}
           />
         </Field>
+
+        {sucessoMsg && (
+          <div className="p-3 bg-green-50 dark:bg-green-950/60 border border-green-300 dark:border-green-800 rounded-lg text-green-800 dark:text-green-200 text-sm font-semibold flex items-center justify-between">
+            <span>{sucessoMsg}</span>
+            <button type="button" onClick={() => setSucessoMsg(null)} className="text-green-700 dark:text-green-300 hover:opacity-75 text-xs p-1">✕</button>
+          </div>
+        )}
+
+        {erroMsg && (
+          <div className="p-3 bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 rounded-lg text-red-800 dark:text-red-200 text-sm font-semibold flex items-center justify-between">
+            <span>{erroMsg}</span>
+            <button type="button" onClick={() => setErroMsg(null)} className="text-red-700 dark:text-red-300 hover:opacity-75 text-xs p-1">✕</button>
+          </div>
+        )}
 
         <div className="flex gap-3 pt-2">
           <Button type="submit" variant="primary" loading={saving} className="flex-1">

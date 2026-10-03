@@ -56,7 +56,8 @@ export const RegistroInputSchema = z
     acompanhante: z.enum(ACOMPANHANTE, { message: 'Selecione uma opção' }),
   })
   .superRefine((val, ctx) => {
-    // Regra 1: se houveAtendimento = 'Sim', procedimento e demanda são obrigatórios.
+    // Regra 1: se houveAtendimento = 'Sim', procedimento é obrigatório.
+    // Demanda só é obrigatória quando houveAtendimento = 'Sim' E o eixo for 'Assistência ao paciente/família'.
     if (val.houveAtendimento === 'Sim') {
       if (!val.procedimento || val.procedimento.trim() === '') {
         ctx.addIssue({
@@ -65,17 +66,16 @@ export const RegistroInputSchema = z
           message: 'Procedimento é obrigatório quando há atendimento',
         })
       }
-      if (!val.demanda || val.demanda.trim() === '') {
+      if (val.eixo === 'Assistência ao paciente/família' && (!val.demanda || val.demanda.trim() === '')) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['demanda'],
-          message: 'Demanda é obrigatória quando há atendimento',
+          message: 'Demanda é obrigatória quando há atendimento na assistência',
         })
       }
     }
     // Regra 2: eixo != 'Assistência ao paciente/família' → demanda e
-    // situacaoEspecifica ficam ocultas e opcionais (não há validação extra).
-    // A regra já está coberta pela ausência de required nessas condições.
+    // situacaoEspecifica ficam ocultas e opcionais (não exigidas).
   })
 
 export type RegistroInput = z.infer<typeof RegistroInputSchema>

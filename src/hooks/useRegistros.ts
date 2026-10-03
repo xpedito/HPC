@@ -92,7 +92,12 @@ export function useRegistrosCrud(criadoPor: string, profissional: string) {
           atualizadoEm: serverTimestamp(),
         }
 
-        const ref = await addDoc(collection(db, 'registros'), payload)
+        // Remove campos undefined para evitar erro "Unsupported field value: undefined" no Firestore
+        const payloadLimpo = Object.fromEntries(
+          Object.entries(payload).filter(([_, v]) => v !== undefined)
+        )
+
+        const ref = await addDoc(collection(db, 'registros'), payloadLimpo)
         return ref.id
       } catch (err) {
         const e = err instanceof Error ? err : new Error(String(err))
@@ -120,7 +125,11 @@ export function useRegistrosCrud(criadoPor: string, profissional: string) {
           patch.data   = Timestamp.fromDate(new Date(ano, mes - 1, dia))
           patch.anoMes = toAnoMes(input.data)
         }
-        await updateDoc(doc(db, 'registros', id), patch)
+
+        const patchLimpo = Object.fromEntries(
+          Object.entries(patch).filter(([_, v]) => v !== undefined)
+        )
+        await updateDoc(doc(db, 'registros', id), patchLimpo)
       } catch (err) {
         const e = err instanceof Error ? err : new Error(String(err))
         setErro(e)
