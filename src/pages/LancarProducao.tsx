@@ -23,7 +23,40 @@ function docDataStr(doc: RegistroDoc): string {
   return toDateString(new Date(doc.data as unknown as string))
 }
 
+const ROTULOS_CAMPOS: Record<string, string> = {
+  data: 'Data',
+  turno: 'Turno',
+  eixo: 'Eixo',
+  setor: 'Setor',
+  publico: 'Público',
+  origemContato: 'Origem do contato',
+  houveAtendimento: 'Houve atendimento',
+  modalidade: 'Modalidade',
+  localIntervencao: 'Local da intervenção',
+  procedimento: 'Procedimento',
+  demanda: 'Demanda',
+  situacaoEspecifica: 'Situação específica',
+  frequencia: 'Frequência',
+  encaminhamento: 'Encaminhamento',
+  necessitaSeguimento: 'Necessita seguimento',
+  acompanhante: 'Acompanhante',
+  idade: 'Idade',
+  observacao: 'Observação',
+}
+
 const BLANK_DEFAULTS: Partial<FormData> = {
+  eixo: '',
+  publico: '',
+  origemContato: '',
+  modalidade: '',
+  localIntervencao: '',
+  procedimento: '',
+  demanda: '',
+  situacaoEspecifica: '',
+  frequencia: '',
+  encaminhamento: '',
+  observacao: '',
+  idade: undefined,
   acompanhante: undefined,
   necessitaSeguimento: undefined,
   houveAtendimento: undefined,
@@ -105,7 +138,8 @@ export default function LancarProducao({ authState }: Props) {
   const onInvalid = (fieldErrors: FieldErrors<FormData>) => {
     console.warn('Erros de validação ao submeter formulário:', fieldErrors)
     const campos = Object.keys(fieldErrors)
-    setErroMsg(`Preencha todos os campos obrigatórios destacados em vermelho (${campos.length} pendente${campos.length > 1 ? 's' : ''}).`)
+    const nomes = campos.map((c) => ROTULOS_CAMPOS[c] || c).join(', ')
+    setErroMsg(`Campos pendentes de preenchimento (${campos.length}): ${nomes}.`)
     setTimeout(() => {
       const primeiro = document.querySelector('.border-red-400, .border-red-500, [aria-invalid="true"]')
       if (primeiro) {

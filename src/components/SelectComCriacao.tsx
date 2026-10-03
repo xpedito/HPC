@@ -60,14 +60,17 @@ export const SelectComCriacao = forwardRef<HTMLSelectElement, SelectComCriacaoPr
     }
   }
 
-  // Garante lista única de opções cadastradas, sem repetições
-  const todasOpcoes = Array.from(new Set(options.filter(Boolean)))
+  // Garante lista única de opções cadastradas, sem repetições, preservando o valor atual se preenchido
+  const todasOpcoes = Array.from(new Set([
+    ...(value ? [String(value)] : []),
+    ...options.filter(Boolean),
+  ]))
 
   return (
     <>
       <select
         ref={ref}
-        value={value}
+        value={value ?? ''}
         onChange={handleSelectChange}
         className={`
           block w-full min-h-tap rounded-lg border px-3 py-2 text-base

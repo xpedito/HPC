@@ -29,6 +29,12 @@ export function useDominios() {
 
   useEffect(() => {
     let unsubs: Array<() => void> = []
+    const chavesCarregadas = new Set<string>()
+
+    // Timeout de segurança para nunca travar tela em loading
+    const timerSeguranca = setTimeout(() => {
+      setLoading(false)
+    }, 2500)
 
     try {
       unsubs = CHAVES_DOMINIO_LIST.map((chave) => {
@@ -51,12 +57,21 @@ export function useDominios() {
               ...prev,
               [chave]: itens,
             }))
-            setLoading(false)
+
+            chavesCarregadas.add(chave)
+            if (chavesCarregadas.size >= CHAVES_DOMINIO_LIST.length) {
+              setLoading(false)
+              clearTimeout(timerSeguranca)
+            }
           },
           (err) => {
             console.error(`Erro ao sincronizar domínio ${chave}:`, err)
             setError(err)
-            setLoading(false)
+            chavesCarregadas.add(chave)
+            if (chavesCarregadas.size >= CHAVES_DOMINIO_LIST.length) {
+              setLoading(false)
+              clearTimeout(timerSeguranca)
+            }
           },
         )
       })
@@ -64,9 +79,11 @@ export function useDominios() {
       console.error('Erro ao configurar listeners de domínio:', err)
       setError(err instanceof Error ? err : new Error(String(err)))
       setLoading(false)
+      clearTimeout(timerSeguranca)
     }
 
     return () => {
+      clearTimeout(timerSeguranca)
       unsubs.forEach((unsub) => unsub())
     }
   }, [])
