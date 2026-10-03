@@ -68,7 +68,7 @@ export default function LancarProducao({ authState }: Props) {
 
   const { valores, adicionarItem, loading: loadingDominios, error: erroDominios } = useDominios()
   const anoMes = toAnoMes(hoje)
-  const { docs: docsMes, loading: loadingDocs } = useRegistrosMes(anoMes)
+  const { docs: docsMes, loading: loadingDocs, error: erroRegistros } = useRegistrosMes(anoMes)
   const { salvar, atualizar, excluir, saving, erro: erroSalvar } = useRegistrosCrud(
     usuario.id,
     usuario.nome,
@@ -195,9 +195,9 @@ export default function LancarProducao({ authState }: Props) {
       </div>
 
       {/* Erro persistente (conexão) */}
-      {(erroMsg || erroSalvar || erroDominios) && (
+      {(erroMsg || erroSalvar || erroDominios || erroRegistros) && (
         <ErroBanner
-          mensagem={erroMsg ?? erroSalvar?.message ?? erroDominios?.message ?? 'Erro desconhecido'}
+          mensagem={erroMsg ?? erroSalvar?.message ?? erroDominios?.message ?? erroRegistros?.message ?? 'Erro desconhecido'}
           onRetry={() => setErroMsg(null)}
         />
       )}

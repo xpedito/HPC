@@ -33,16 +33,17 @@ export function useRegistrosMes(anoMes: string) {
     if (!anoMes) return
 
     setLoading(true)
+    // Consulta simples filtrando apenas por anoMes. A ordenação é feita em memória
+    // para evitar erros de índice composto inexistente no Firestore.
     const q = query(
       collection(db, 'registros'),
       where('anoMes', '==', anoMes),
-      orderBy('data', 'desc'),
     )
 
     const unsub = onSnapshot(
       q,
       (snap) => {
-      const result: RegistroDoc[] = snap.docs.map((d) => {
+        const result: RegistroDoc[] = snap.docs.map((d) => {
           const raw = d.data()
           return {
             ...(raw as Omit<RegistroDoc, 'id' | 'data' | 'criadoEm' | 'atualizadoEm'>),
@@ -52,10 +53,22 @@ export function useRegistrosMes(anoMes: string) {
             atualizadoEm: toDate(raw.atualizadoEm),
           } as RegistroDoc
         })
+
+        // Ordenação em memória por data decrescente (e criadoEm decrescente)
+        result.sort((a, b) => {
+          const timeA = a.data instanceof Date ? a.data.getTime() : new Date(a.data).getTime()
+          const timeB = b.data instanceof Date ? b.data.getTime() : new Date(b.data).getTime()
+          if (timeB !== timeA) return timeB - timeA
+          const crA = a.criadoEm instanceof Date ? a.criadoEm.getTime() : 0
+          const crB = b.criadoEm instanceof Date ? b.criadoEm.getTime() : 0
+          return crB - crA
+        })
+
         setDocs(result)
         setLoading(false)
       },
       (err) => {
+        console.error('Erro ao ler registros do mês no Firestore:', err)
         setError(err)
         setLoading(false)
       },

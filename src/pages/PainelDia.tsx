@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useRegistrosMes } from '@/hooks/useRegistros'
-import { Spinner, QualidadeBadge } from '@/components/ui'
+import { Spinner, QualidadeBadge, ErroBanner } from '@/components/ui'
 import {
   calcularIndicadores,
   tabelaPorSetor,
@@ -85,7 +85,7 @@ export default function PainelDia() {
   const [dataSelecionada, setDataSelecionada] = useState(hoje)
 
   const anoMes = toAnoMes(dataSelecionada)
-  const { docs: docsMes, loading } = useRegistrosMes(anoMes)
+  const { docs: docsMes, loading, error } = useRegistrosMes(anoMes)
 
   const { indDia, indMes, tabSetorMes, tabPublicoMes, tabDemandaMes, evolucaoDias } = useMemo(() => {
     const docsD = filtrarPorDia(docsMes, dataSelecionada)
@@ -137,6 +137,8 @@ export default function PainelDia() {
           className="ml-auto border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
+
+      {error && <ErroBanner mensagem={error.message} />}
 
       {loading && <Spinner />}
 
